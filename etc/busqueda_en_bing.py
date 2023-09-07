@@ -10,7 +10,7 @@ import time
 driver = webdriver.Chrome()
 
 
-# Navegar a la https://www.bing.compágina de inicio de Google
+# Navegar a la https://www.bing.compágina de inicio de Bing
 driver.get("https://www.google.com")
 
 # Encontrar el campo de búsqueda y escribir las palabras clave
