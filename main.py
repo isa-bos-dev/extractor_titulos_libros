@@ -71,9 +71,11 @@ def generar_driver():
     Genera un driver de Selenium.
 
     Returns:
-        driver (selenium.webdriver.chrome.webdriver.WebDriver): Driver de Selenium
+        driver (selenium.webdriver.chrome.webdriver.WebDriver): Driver de Selenium para Google
+        driver (selenium.webdriver.firefox.webdriver.WebDriver): Driver de Selenium para Firefox
     """
-    driver = webdriver.Chrome()
+    # driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
     return driver
 
 def login (driver, email, password):
@@ -90,7 +92,7 @@ def login (driver, email, password):
     time.sleep(3)
     
     try:
-        login_button = WebDriverWait(driver, 10).until(
+        login_button = WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.XPATH, "//button[contains(@class, 'relative flex h-12 items-center justify-center rounded-md text-center text-base font-medium bg-[#3C46FF] text-[#fff] hover:bg-[#0000FF]')]"))
         )
         login_button.click()
@@ -147,22 +149,20 @@ def hacer_prompt(driver, descripcion):
 
     time.sleep(5)
 
-    while True:
-        try:
-            driver.find_element(By.CLASS_NAME, "text-2x1")
-        except:
-            break
+    while "Stop generating" in driver.page_source:
+        print('Stop generating...')
+        time.sleep(1)
 
     try:
         output = driver.find_elements(By.CSS_SELECTOR, "div.markdown.prose.w-full.break-words.dark\:prose-invert.light")[-1]
-
+        libros = []
         if output:
             libros = []
             for li in output.find_elements(By.TAG_NAME, "li"):
                 print('libro: ', li.text)
                 libros.append(li.text)
-        else:
-            return []
+        
+        return  libros
     
     except Exception as e:
         print('Error: ', e)
@@ -195,7 +195,13 @@ def obtener_episodios(conexion):
 
     cursor = conexion.cursor()
     cursor.execute("SELECT * FROM episodio")
-    episodios = cursor.fetchall()
+    registros = cursor.fetchall()
+
+    episodios = []
+
+    for r in registros:
+        episodio = Episodio(r[0], r[1], r[2], r[3], r[4])
+        episodios.append(episodio)
 
     return episodios
 
@@ -215,8 +221,8 @@ def main():
     login(driver, EMAIL, PASSWORD)
 
     for episodio in episodios:
-        print ('episodio: ', episodio[0])
-        descripcion = episodio[1]
+        print ('ID del episodio: ', episodio.item_id)
+        descripcion = episodio.decription
 
         resultado = hacer_prompt(driver, descripcion)
 
