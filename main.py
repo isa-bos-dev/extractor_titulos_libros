@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import time
 
 from selenium import webdriver
@@ -123,6 +124,40 @@ def hacer_prompt(driver, descripcion):
     except Exception as e:
         print('Error: ', e)
         return []
+
+def conectar_db(nombre_archivo):
+    """
+    Conecta a la base de datos.
+
+    Args:
+        nombre_archivo (str): Nombre del archivo de la base de datos.
+
+    Returns:
+        conn (sqlite3.Connection): Conexión a la base de datos
+        cursor (sqlite3.Cursor): Cursor de la base de datos.
+    """
+    conn = sqlite3.connect(nombre_archivo)
+    cursor = conn.cursor()
+
+    return conn, cursor
+
+def obtener_episodios(conexion):
+    """
+    Obtiene los episodios de la base de datos
+
+    Args:
+        conexion (sqlite3.Connection): Conexión a la base de datos
+
+    Returns: 
+        episodios
+    """
+
+    cursor = conexion.cursor()
+    cursor.execute("SELECT * FROM episodios")
+    episodios = cursor.fetchall()
+
+    return episodios
+
 
 EMAIL, PASSWORD = obtener_credenciales()
 
