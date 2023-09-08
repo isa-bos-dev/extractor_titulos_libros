@@ -8,7 +8,7 @@ Este módulo  es una herramienta que permite extraer un listado de libros a part
 ## 2.- Requisitos
 
 
-Para ejecutarf este script necesitamos las siguientes herramientas
+Para ejecutar este script necesitamos las siguientes herramientas
 
 
 1. Python 3.9 o superior
