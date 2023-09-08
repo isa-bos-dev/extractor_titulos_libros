@@ -161,12 +161,14 @@ def hacer_prompt(driver, descripcion):
             for li in output.find_elements(By.TAG_NAME, "li"):
                 print('libro: ', li.text)
                 libros.append(li.text)
+
+            resultado = output.text
         
-        return  libros
+        return resultado, libros
     
     except Exception as e:
         print('Error: ', e)
-        return []
+        return None, []
 
 def conectar_db(nombre_archivo):
     """
@@ -205,6 +207,19 @@ def obtener_episodios(conexion):
 
     return episodios
 
+def actualizar_episodio(conexion, episodio):
+    """
+    Actualiza un episodio en la base de datos.
+
+    Args:
+        conexion (sqlite3.Connection): Conexión a la base de datos
+        episodio (Episodio): Episodio a actualizar
+    """
+    cursor = conexion.cursor()
+
+    cursor.execute("UPDATE episodio SET resultado = ?, libros = ? WHERE item_id = ?", (episodio.resultado, episodio.libros, episodio.item_id))
+
+    conexion.commit()
 
 def main():
     
@@ -228,7 +243,10 @@ def main():
 
         if len(resultado):
             print('Resultado: ', resultado)   
-            time.sleep(5) 
+
+            episodio.resultado = resultado
+        
+        time.sleep(5) 
 
     time.sleep(1000)
 
