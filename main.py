@@ -5,7 +5,51 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
+
+class Episodio:
+    """
+    Representa un episodio de un podcast.
+    """
+    def __init__(self, item_id, duration_ms, release_date, name, description):
+        """
+        Inicializa un episodio.
+
+        Args:
+            item_id (str): ID del episodio
+            duduration_ms (int): Duración del episodio en milisegundos
+            relrelease_date (str): Fecha de lanzamiento del episodio.
+            name (str): Nombre del episodio.
+            dedescription (str): Descripción del episodio.
+
+        """
+        self.item_id = item_id
+        self.duration_ms = duration_ms
+        self.release_date = release_date
+        self.name = name
+        self.description = description
+        self.resultado = None
+        self.libros = None
+
+    def __str__(self):
+        """
+        Devuelve una representación en string del episodio.
+
+        Returns:
+            str: Representación en string del episodio.
+        """
+        return f"Episodio(Id: {self.item_id}\nDuration (ms): {self.duration_ms}\nRelease Date: {self.release_date}\nName: {self.name}\nDescription: {self.description})"
+    
+    def __repr__(self):
+        """
+        Devuelve una representación en string del episodio.
+
+        Returns:
+            str: Representación en string del episodio.
+        """
+        return self.__str__()
 
 def obtener_credenciales():
     """
@@ -41,20 +85,19 @@ def login (driver, email, password):
         email (str): Email de la cuenta OpenAI
         password (str): Contraseña de la cuenta OpenAI
     """
-    driver.get('https://chat.openai.com/auth/login')
+    driver.get('https://platform.openai.com/login?launch')
     
     time.sleep(3)
     
     try:
-        login_button = driver.find_element(By.XPATH, "//button[div[contains(@class, 'fex w-full gap-2 itmes-center justify-center') and text()='Log in']]")   
+        login_button = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//button[contains(@class, 'relative flex h-12 items-center justify-center rounded-md text-center text-base font-medium bg-[#3C46FF] text-[#fff] hover:bg-[#0000FF]')]"))
+        )
         login_button.click()
+    except Exception as e:
+        print('No se pudo encontrar el botón de login:', str(e))
 
-    except:
-        print('No se pudo encontrar el botón de login')
-        login_button = driver.find_element(By.XPATH, "//button[contains(@class, 'relative flex h-12 items-center justify-center rounded-md text-center text-base font-medium bg-[#3C46FF] text-[#fff] hover:bg-[#0000FF]')]")
-        login_button.click()
-
-    time.sleep(3)
+    time.sleep(1)
 
     username_field = driver.find_element(By.NAME, 'username')
     username_field.send_keys(email)
@@ -70,7 +113,7 @@ def login (driver, email, password):
 
     password_field.send_keys(Keys.RETURN)
 
-    time.sleep(1)
+    time.sleep(30)
 
     btn_okay = driver.find_element(By.CSS_SELECTOR, "button.btn.relative.btn-primary")
     btn_okay[1].click()
@@ -134,12 +177,10 @@ def conectar_db(nombre_archivo):
 
     Returns:
         conn (sqlite3.Connection): Conexión a la base de datos
-        cursor (sqlite3.Cursor): Cursor de la base de datos.
     """
-    conn = sqlite3.connect(nombre_archivo)
-    cursor = conn.cursor()
+    conexion = sqlite3.connect(nombre_archivo)
 
-    return conn, cursor
+    return conexion
 
 def obtener_episodios(conexion):
     """
@@ -153,19 +194,35 @@ def obtener_episodios(conexion):
     """
 
     cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM episodios")
+    cursor.execute("SELECT * FROM episodio")
     episodios = cursor.fetchall()
 
     return episodios
 
 
 def main():
+    
+    conexion = conectar_db('filosofia_bolsillo_episodios.db')
+    episodios = obtener_episodios(conexion)
+
+    print ('episodios: ', len(episodios))
+
     EMAIL, PASSWORD = obtener_credenciales()
     driver = generar_driver()
 
     time.sleep(1)
 
     login(driver, EMAIL, PASSWORD)
+
+    for episodio in episodios:
+        print ('episodio: ', episodio[0])
+        descripcion = episodio[1]
+
+        resultado = hacer_prompt(driver, descripcion)
+
+        if len(resultado):
+            print('Resultado: ', resultado)   
+            time.sleep(5) 
 
     time.sleep(1000)
 
