@@ -159,13 +159,15 @@ def obtener_episodios(conexion):
     return episodios
 
 
-EMAIL, PASSWORD = obtener_credenciales()
+def main():
+    EMAIL, PASSWORD = obtener_credenciales()
+    driver = generar_driver()
 
-driver = generar_driver()
+    time.sleep(1)
 
-time.sleep(1)
+    login(driver, EMAIL, PASSWORD)
 
-login(driver, EMAIL, PASSWORD)
+    time.sleep(1000)
 
-
-time.sleep(1000)
+if __name__ == '__main__':
+    main()
