@@ -221,6 +221,34 @@ def actualizar_episodio(conexion, episodio):
 
     conexion.commit()
 
+def guardar_libros(conexion):
+    """
+    Guarda los libros en un archivo de texto
+
+    Args:
+        conexion (sqlite3.Connection): Conexión a la base de datos
+    """
+
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT * FROM episodio WHERE respuesta IS NOT NULL AND libros IS NOT NULL")
+    registros = cursor.fetchall()
+    libros = []
+
+    for r in registros:
+        libros.extend(r[5].split('#'))
+
+    libros = list(set(libros))
+
+    with open('libros.txt', 'W', encoding='utf8') as f:
+        f.write('\n'.join(libros))
+
+def main_generar_archivo_texto():
+    """
+    """
+    conexion = conectar_db('filosofia_bolsillo_episodios.db')
+    guardar_libros(conexion)
+
 def main():
     
     conexion = conectar_db('filosofia_bolsillo_episodios.db')
