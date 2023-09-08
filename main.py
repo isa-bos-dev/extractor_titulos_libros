@@ -30,7 +30,7 @@ class Episodio:
         self.release_date = release_date
         self.name = name
         self.description = description
-        self.resultado = None
+        self.respuesta = None
         self.libros = None
 
     def __str__(self):
@@ -217,7 +217,7 @@ def actualizar_episodio(conexion, episodio):
     """
     cursor = conexion.cursor()
 
-    cursor.execute("UPDATE episodio SET resultado = ?, libros = ? WHERE item_id = ?", (episodio.resultado, episodio.libros, episodio.item_id))
+    cursor.execute("UPDATE episodio SET respuesta = ?, libros = ? WHERE item_id = ?", (episodio.respuesta, episodio.libros, episodio.item_id))
 
     conexion.commit()
 
@@ -239,12 +239,22 @@ def main():
         print ('ID del episodio: ', episodio.item_id)
         descripcion = episodio.decription
 
-        resultado = hacer_prompt(driver, descripcion)
+        respuesta, libros = hacer_prompt(driver, descripcion)
 
-        if len(resultado):
-            print('Resultado: ', resultado)   
+        if len(libros):
+            print ('*', 80)
+            print('Respuesta: ', respuesta)
+            print ('Cantidad de libros', len(libros))
+            print('Libros: ', libros)    
+            
 
-            episodio.resultado = resultado
+            episodio.respuesta = respuesta
+            episodio.libros = '#'.join(libros)
+
+            actualizar_episodio(conexion, episodio)
+            print('Episodio actualizado')
+            print ('*', 80)
+            print()
         
         time.sleep(5) 
 
